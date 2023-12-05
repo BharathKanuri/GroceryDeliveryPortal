@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap');
+h1{
+    font-weight: bold;
+}
+p{
+    font-family: 'Barlow', sans-serif;
+    font-size: 25px;
+    font-weight: bold;
+    color: darkorange;
+}
+img{
+    max-width: 1250px;
+    width: 100%;
+    max-height: 500px;
+    height: 100%;
+}
+.announcement{
+    transform: rotate(-25deg);
+}

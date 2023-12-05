@@ -1,0 +1,19 @@
+.shopCard{
+    border: 1px solid green;
+    box-shadow: 0px 7.5px 40px green;
+}
+.shopCard:hover{
+    transform: scale(1.1);
+    background-color: khaki;
+    border: 1px solid khaki;
+    box-shadow: 0px 7.5px 40px khaki;
+}
+.close-button{
+    background-color: white;
+}
+.billCard{
+    border: 3.5px solid green;
+}
+.addressCard{
+    border: 3.5px solid orangered;
+}

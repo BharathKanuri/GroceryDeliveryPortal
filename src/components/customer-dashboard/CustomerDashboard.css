@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap');
+.customerdb{
+    font-family: 'Barlow', sans-serif;
+}
+#file-input{
+    display: none;
+}
+.userImg{
+    max-width: 200px;
+    width: 100%;
+    min-height: 200px;
+    height: 100%;
+}
+.displayImg{
+    width: 55px;
+    height: 55px;
+    position: relative;
+    left: 22.5px;
+}
+.logoutButton{
+    position: relative;
+    top: 2px;
+}
+.rightContent{
+    position: relative;
+    top: -40px;
+    float: right;
+}
+#password{
+    border-right: 0;
+}
+a.input-group-text{
+    background-color: white;
+}
+.errors{
+    font-size: 15px;
+}
+.editIcon{
+    opacity: 65%;
+    background-color:orangered;
+    padding-right: 2.9px;
+    padding-left: 3px;
+    border-radius: 15%;
+}
+.editIcon:hover{
+    opacity: 100%;
+}
+.cartIcon{
+    fill: #379237;
+}
+.cartIcon:hover{
+    cursor: pointer;
+    fill: #ec2400;
+}

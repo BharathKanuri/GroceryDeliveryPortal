@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap');
+div{
+    text-align: justify;
+    text-justify: inter-word;
+}
+p{
+    font-family: 'Barlow', sans-serif;
+}

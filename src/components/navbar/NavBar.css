@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Puddles&display=swap');
+nav{
+    font-family: 'Barlow', sans-serif;
+    background-color: #013220;
+}
+.heading1{
+    font-family: 'Rubik Puddles', cursive;
+    color: white;
+}
+.active .farmer-icon{
+    color: greenyellow;
+}
+.active .customer-icon{
+    color: sandybrown;
+}

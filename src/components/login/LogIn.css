@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300&display=swap');
+.user-login{
+    font-family: 'Barlow', sans-serif;
+    background-color: #BE996E;
+}
+#password{
+    border-right: 0;
+}
+a.input-group-text{
+    background-color: white;
+}

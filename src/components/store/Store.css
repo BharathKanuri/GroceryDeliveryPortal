@@ -1,0 +1,15 @@
+.displayImages{
+    max-width: 650px;
+    width: 100%;
+    max-height: 400px;
+    height: 100%;
+}
+.storeCard{
+    border: 1px solid #765827;
+    box-shadow: 0px 7.5px 40px #765827;
+}
+.storeCard:hover{
+    transform: scale(1.075);
+    border: 1px solid red;
+    box-shadow: 0px 7.5px 40px red;
+}
