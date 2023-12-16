@@ -1,7 +1,10 @@
 //Create express app
 const exp=require('express')//Module contains function
 const app=exp()//returns express object
-app.listen(3500,()=>console.log("web server listening at port 3500..."))
+require('dotenv').config()
+//Assign port number
+const port=process.env.PORT||4000
+app.listen(port,()=>console.log("web server listening at port 3500..."))
 const cors = require('cors')
 app.use(cors())
 //Import farmersApp

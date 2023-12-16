@@ -21,6 +21,25 @@ function Store() {
   let [executeGetProducts,setExecuteGetProducts]=useState(false)
   let [isLoading,setIsLoading]=useState(false)
   let [showProductName,setShowProductName]=useState('')
+  let toastConfig={
+    position: "top-center",
+    autoClose: 7500,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+    style:{width:'325px'}
+  }
+  let handleCatch=(error)=>{
+    if(error.response)
+      toast.error('Invalid URL Request', toastConfig);
+    else if(error.request)
+      toast.warning('Check your network connection', toastConfig);
+    else
+      toast.error('Oops!!! Something Went Wrong', toastConfig);
+  }
   useEffect(()=>{
     if(userLogInStatus===true){
       axios.get(`http://localhost:3500/farmers-api/get-products/${currentUser.Username}`)
@@ -29,54 +48,10 @@ function Store() {
           setProducts(response.data.message)
           setErr('')
         }
-        else if(response.status===200){
+        else if(response.status===200)
           setErr(response.data.message)
-        }
       })
-      .catch(err=>{
-        if(err.response){
-          toast.error('Invalid URL Request', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else if(err.request){
-          toast.warning('Check your network connection', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else{
-          toast.error('Oops!!! Something Went Wrong', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-      })
+      .catch(err=>handleCatch(err))
     }
   },[showProduct,executeGetProducts])
   let closeEditProductModal=()=>{
@@ -93,79 +68,13 @@ function Store() {
         setExecuteGetProducts(!executeGetProducts)
         if(responseObj.data.message==='Product deleted'){
           setProducts({})
-          toast.info(responseObj.data.message, 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
+          toast.info(responseObj.data.message, toastConfig)
           closeEditProductModal()
          }
-        else if(responseObj.status===200){
-          toast.error(responseObj.data.message, 
-            {
-              position: "top-center",
-              autoClose: 7500,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              style:{width:'325px'}
-            })
-          }
+        else if(responseObj.status===200)
+          toast.error(responseObj.data.message, toastConfig)
       })
-      .catch(err=>{
-        if(err.response){
-          toast.error('Invalid URL Request', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else if(err.request){
-          toast.warning('Check your network connection', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else{
-          toast.error('Oops!!! Something went wrong', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-      })
+      .catch(err=>handleCatch(err))
     }
   }
   let editProduct=(productObj)=>{
@@ -205,79 +114,15 @@ function Store() {
         setIsLoading(false)
         setExecuteGetProducts(!executeGetProducts)
         if(responseObj.data.message==='Product details updated'){
-          toast.info(responseObj.data.message, 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
+          toast.info(responseObj.data.message, toastConfig)
           closeEditProductModal()
          }
-        else if(responseObj.status===200){
-          toast.error(responseObj.data.message, 
-            {
-              position: "top-center",
-              autoClose: 7500,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              style:{width:'325px'}
-            })
-          }
+        else if(responseObj.status===200)
+          toast.error(responseObj.data.message, toastConfig)
         })
         .catch(err=>{
           setIsLoading(false)
-          if(err.response){
-            toast.error('Invalid URL Request', 
-            {
-              position: "top-center",
-              autoClose: 7500,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              style:{width:'325px'}
-            })
-          }
-          else if(err.request){
-            toast.warning('Check your network connection', 
-            {
-              position: "top-center",
-              autoClose: 7500,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              style:{width:'325px'}
-            })
-          }
-          else{
-            toast.error('Oops!!! Something went wrong', 
-            {
-              position: "top-center",
-              autoClose: 7500,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              style:{width:'325px'}
-            })
-          }
+          handleCatch(err)
         })
       }
   }

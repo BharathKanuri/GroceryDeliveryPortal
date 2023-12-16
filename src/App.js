@@ -1,7 +1,6 @@
-import './App.css';
 import './components/root-layout/RootLayout'
-import {createBrowserRouter,RouterProvider} from 'react-router-dom';
-import RootLayout from './components/root-layout/RootLayout';
+import {createBrowserRouter,RouterProvider} from 'react-router-dom'
+import RootLayout from './components/root-layout/RootLayout'
 import ErrorPage from './components/ErrorPage'
 import Home from './components/home/Home'
 import SignUp from './components/signup/SignUp'
@@ -11,6 +10,8 @@ import FarmerDashboard from './components/farmer-dashboard/FarmerDashboard'
 import CustomerDashboard from './components/customer-dashboard/CustomerDashboard'
 import Store from './components/store/Store'
 import Shop from './components/shop/Shop'
+import Delivery from './components/delivery/Delivery'
+import Order from './components/order/Order'
 
 function App() {
   let router=createBrowserRouter([
@@ -33,7 +34,7 @@ function App() {
         },
         {
           path:'/login',
-          element:<LogIn/>,
+          element:<LogIn/>
         },
         {
           path:'/about-us',
@@ -46,6 +47,10 @@ function App() {
             {
               path:'store',
               element:<Store/>
+            },
+            {
+              path:'deliveries',
+              element:<Delivery/>
             }
           ]
         },
@@ -56,6 +61,10 @@ function App() {
             {
               path:'shop',
               element:<Shop/>
+            },
+            {
+              path:'orders',
+              element:<Order/>
             }
           ]
         }
@@ -67,4 +76,4 @@ function App() {
   );
 }
 
-export default App;
+export default App

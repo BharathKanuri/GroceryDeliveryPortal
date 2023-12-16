@@ -1,0 +1,7 @@
+.addressSaveIcon{
+    fill: orange;
+}
+.addressSaveIcon:hover{
+    cursor: pointer;
+    fill: blue;
+}

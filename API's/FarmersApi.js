@@ -103,8 +103,6 @@ farmersApp.put('/update-profile/:username',expressAsyncHandler(async(req,res)=>{
         else{
             //Hash the password
             let hashedPassword=await bcryptjs.hash(modifiedFarmerObj.Password, 5)
-            //Replace plain password with hashed password
-            modifiedFarmerObj.Password=hashedPassword
             //Update modified user
             let updatedUser=await farmersCollectionObj.updateOne(
                 {
@@ -113,13 +111,13 @@ farmersApp.put('/update-profile/:username',expressAsyncHandler(async(req,res)=>{
                 {
                     $set:{
                             Username:modifiedFarmerObj.Username,
-                            Password:modifiedFarmerObj.Password,
+                            Password:hashedPassword,
                             Email:modifiedFarmerObj.Email
                         }
                 }
             )
-            if(updatedUser.acknowledged===true)
-                res.status(201).send({message:'Profile Updated'})
+            if(updatedUser.acknowledged)
+                res.status(201).send({message:'Profile updated'})
             else
                 res.status(200).send({message:'Profile updation unsuccessful'})
         }
@@ -135,16 +133,18 @@ farmersApp.put('/update-profile-image/:username',multerObj.single('Updated-Farme
         const farmersCollectionObj=req.app.get("farmersCollectionObj")
         //Get username from url
         let usernameOfProfileToBeModified=req.params.username
-        let imageUpdation//Get CDN link of image and update it
-        await farmersCollectionObj.updateOne(
+        //Get CDN link of image and update it
+        let imageUpdation=await farmersCollectionObj.updateOne(
             {
                 Username:usernameOfProfileToBeModified
             },
             {
-                $set:{Image:req.file.path}
+                $set:{
+                    Image:req.file.path
+                }
             }
         )
-        if(imageUpdation.acknowledged===true)
+        if(imageUpdation.acknowledged)
             res.status(201).send({message:'Profile image updated successfully',image:req.file.path})
         else
             res.status(200).send({message:'Profile image updation unsuccessful'})
@@ -164,9 +164,13 @@ farmersApp.put('/add-product/:username',multerObj.array("Images"),expressAsyncHa
     else{
         //Add product images to product object
         const productObj=JSON.parse(req.body.Product)
+        //Convert required string data to int
+        productObj.Quantity=Number(productObj.Quantity)
+        productObj.Price=Number(productObj.Price)
+        productObj.Stock=parseInt(productObj.Stock)
         //Add CDN links of Cloudinary images to product object
         productObj.Images=productImages
-        //Enforce timestamp as unique key to each object
+        //Enforce timestamp as unique key to each product object
         let key=Date.now().toString()
         productObj.Key=key
         //Add product object to existing farmer document
@@ -175,7 +179,9 @@ farmersApp.put('/add-product/:username',multerObj.array("Images"),expressAsyncHa
                 Username:productOwner
             },
             {
-                $set:{[`Products.${key}`]:productObj}
+                $set:{
+                    [`Products.${key}`]:productObj
+                }
             }
         )
         res.status(201).send({message:'Product added'})
@@ -204,6 +210,10 @@ farmersApp.put('/edit-product/:username',expressAsyncHandler(async(req,res)=>{
     //Get modified product object from request
     let modifiedProductObj=req.body
     let key=modifiedProductObj.Key
+    //Convert required string data to int
+    modifiedProductObj.Quantity=Number(modifiedProductObj.Quantity)
+    modifiedProductObj.Price=Number(modifiedProductObj.Price)
+    modifiedProductObj.Stock=parseInt(modifiedProductObj.Stock)
     //Update product details according to key
     let resultSet=await farmersCollectionObj.updateMany(
         {   
@@ -211,10 +221,12 @@ farmersApp.put('/edit-product/:username',expressAsyncHandler(async(req,res)=>{
             [`Products.${key}.Key`]:key
         },
         {
-            $set:{[`Products.${key}`]:modifiedProductObj}
+            $set:{
+                [`Products.${key}`]:modifiedProductObj
+            }
         }
     )
-    if(resultSet.acknowledged===true)
+    if(resultSet.acknowledged)
         res.status(201).send({message:'Product details updated'})
     else
         res.status(200).send({message:'Update unsuccessful'})
@@ -236,7 +248,7 @@ farmersApp.delete('/delete-product/resource',expressAsyncHandler(async(req,res)=
             $unset:{[`Products.${key}`]:''}
         }
     )
-    if(resultSet.acknowledged===true)
+    if(resultSet.acknowledged)
         res.status(201).send({message:'Product deleted'})
     else
         res.status(200).send({message:'Delete unsuccessful'})
@@ -246,10 +258,144 @@ farmersApp.get('/get-all-products',expressAsyncHandler(async(req,res)=>{
     //Get farmersCollectionObj
     const farmersCollectionObj=req.app.get("farmersCollectionObj")
     //Get products of all farmers
-    let resultSet=await farmersCollectionObj.find({},{projection:{_id:0,"Username":1,[`Products`]:1}}).toArray()
+    let resultSet=await farmersCollectionObj.find({},
+        {
+            projection:{_id:0,"Username":1,[`Products`]:1}
+        }
+    ).toArray()
     if(resultSet.length===0)
         res.status(200).send({message:'Products are unavailable currently'})
     else
         res.status(201).send({message:resultSet})
+}))
+//Add order and delivery
+farmersApp.put('/order-product/:username',expressAsyncHandler(async(req,res)=>{
+    //Get farmersCollectionObj
+    const farmersCollectionObj=req.app.get("farmersCollectionObj")
+    //Get customersCollectionObj
+    const customersCollectionObj=req.app.get("customersCollectionObj")
+    let [username,productObj,stockCount,addressObj]=req.body
+    productObj.Quantity=productObj.Quantity*stockCount
+    productObj.Price=productObj.Price*stockCount
+    let orderedCustomer=req.params.username
+    let isKey=await farmersCollectionObj.findOne(
+        {
+            Username:username,
+            [`Orders.${addressObj.Key}`]:{$exists:true}
+        }
+    )
+    //Enforce timestamp as unique key to each product object
+    let deliveryKey=Date.now().toString()
+    productObj.DeliveryKey=deliveryKey
+    delete productObj.Stock
+    delete productObj.Images
+    let deliveryObj
+    if(isKey===null || isKey.length===0){
+        deliveryObj=await farmersCollectionObj.updateOne(
+            {
+                Username:username
+            },
+            {
+                $set:{
+                    [`Deliveries.${addressObj.Key}.Address`]:addressObj,
+                    [`Deliveries.${addressObj.Key}.${deliveryKey}`]:productObj,
+                },
+                $inc:{
+                    [`Products.${productObj.Key}.Stock`]: -stockCount
+                }
+            }
+        )
+    }
+    else{
+        deliveryObj=await farmersCollectionObj.updateOne(
+            {
+                Username:username
+            },
+            {
+                $set:{
+                    [`Deliveries.${addressObj.Key}.${deliveryKey}`]:productObj
+                },
+                $inc:{
+                    [`Products.${productObj.Key}.Stock`]: -stockCount
+                }
+            }
+        )
+    }
+    productObj.DeliveryStatus="Order Confirmed"
+    productObj.Owner=username
+    productObj.OrderKey=productObj.DeliveryKey
+    delete productObj.DeliveryKey
+    productObj.AddressKey=addressObj.Key
+    let orderObj=await customersCollectionObj.updateOne(
+        {
+            Username:orderedCustomer
+        },
+        {
+            $set:{
+                [`Orders.${productObj.OrderKey}`]:productObj
+            }
+        }
+    )
+    if(deliveryObj.acknowledged && orderObj.acknowledged)
+        res.status(201).send({message:'Order placed successfully'})
+    else
+        res.status(200).send({message:'Order failed'})
+}))
+//Get deliveries
+farmersApp.get('/get-deliveries/:username',expressAsyncHandler(async(req,res)=>{
+    //Get farmersCollectionObj
+    const farmersCollectionObj=req.app.get("farmersCollectionObj")
+    //Get farmer username from url
+    let username=req.params.username
+    //Get deliveries
+    let deliveryObj=await farmersCollectionObj.findOne(
+        {
+            Username:username
+        },
+        {
+            projection:{_id:0,"Deliveries":1}
+        }
+    )
+    if(Object.keys(deliveryObj).length>0 && deliveryObj!==null)
+        res.status(201).send({message:deliveryObj.Deliveries})
+    else
+        res.status(200).send({message:"No orders to be delivered"})
+}))
+//Update delivery status
+farmersApp.put('/update-delivery-status/:username',expressAsyncHandler(async(req,res)=>{
+    //Get farmersCollectionObj
+    const farmersCollectionObj=req.app.get("farmersCollectionObj")
+    //Get customersCollectionObj
+    const customersCollectionObj=req.app.get("customersCollectionObj")
+    //Get farmer username from url
+    let username=req.params.username
+    //Destructure delivery status obj
+    let {addressKey,deliveryKey,status,customer}=req.body
+    //Update delivery status on farmer side
+    let deliveryObj=await farmersCollectionObj.updateOne(
+        {
+            Username:username
+        },
+        {
+            $set:{
+                [`Deliveries.${addressKey}.${deliveryKey}.DeliveryStatus`]:status
+            }
+        }
+    )
+    //Update delivery status on customer side
+    let orderObj=await customersCollectionObj.updateOne(
+        {
+            Username:customer
+        },
+        {
+            $set:{
+                [`Orders.${deliveryKey}.DeliveryStatus`]:status
+            }
+        }
+    )
+    if(deliveryObj.acknowledged && orderObj.acknowledged)
+        res.status(201).send({message:'Delivery status updation successful'})
+    else
+        res.status(200).send({message:'Delivery status updation unsuccessful'})
 }))
 module.exports=farmersApp

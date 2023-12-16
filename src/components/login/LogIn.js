@@ -49,7 +49,7 @@ function LogIn() {
                 id='password'
                 {...register("Password",{required:'* Password Required'})}
               />
-              <a onClick={()=>{setShowPassword(!showPassword)}} className='input-group-text rounded-end text-dark fs-5'>{showPassword?<AiFillEyeInvisible/>:<AiFillEye/>}</a>
+              <a onClick={()=>setShowPassword(!showPassword)} className='input-group-text rounded-end text-dark fs-5'>{showPassword?<AiFillEyeInvisible/>:<AiFillEye/>}</a>
               <label htmlFor='password'>Password</label>
             </div>
             {errors.Password?.type==='required' && <p className='text-danger fw-semibold errors'>{errors.Password.message}</p>}
@@ -70,6 +70,7 @@ function LogIn() {
           </form>
         </div>
       </div>
+      
     </div>
   )
 }

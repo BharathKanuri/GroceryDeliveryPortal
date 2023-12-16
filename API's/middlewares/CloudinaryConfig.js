@@ -1,11 +1,13 @@
 const cloudinary=require('cloudinary').v2//Non Core module of version-2
 const multer=require('multer')
 const {CloudinaryStorage}=require('multer-storage-cloudinary')
+require('dotenv').config()//process.env.EnvironmentVariableName (process is global object in node)
+const {env}=require('process')
 //Configure Cloudinary
 cloudinary.config({
-    cloud_name : "dhsvt2xdm",
-    api_key : "357672956549786",
-    api_secret : "FZqRPbfeTVKXldwTcseqBELzg6g"
+    cloud_name : env.CLOUD_NAME,
+    api_key : env.API_KEY,
+    api_secret : env.API_SECRET
 })
 //Configure Cloudinary Storage(Where do you want to store the files in the cloud)
 let cloudinaryStorageObj=new CloudinaryStorage({

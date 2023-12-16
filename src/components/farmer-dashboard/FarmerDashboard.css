@@ -59,3 +59,10 @@ a.input-group-text{
     cursor: pointer;
     fill: #608420;
 }
+.deliveryIcon{
+    fill: #76BA18;
+}
+.deliveryIcon:hover{
+    cursor: pointer;
+    fill: orangered;
+}

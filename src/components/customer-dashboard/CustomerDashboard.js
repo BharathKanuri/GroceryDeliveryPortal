@@ -14,6 +14,7 @@ import {TbLogout} from 'react-icons/tb'
 import {FcEditImage} from 'react-icons/fc'
 import {RiUserSettingsLine} from 'react-icons/ri'
 import {RotatingLines} from 'react-loader-spinner'
+import {BiSolidPurchaseTag} from "react-icons/bi"
 
 function CustomerDashboard(){
   let navigate=useNavigate()
@@ -25,6 +26,25 @@ function CustomerDashboard(){
   let [showPassword,setShowPassword]=useState(false)
   let [displayText,setDisplayText]=useState(false)
   let [isLoading,setIsLoading]=useState(false)
+  let toastConfig={
+    position: "top-center",
+    autoClose: 7500,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+    style:{width:'325px'}
+  }
+  let handleCatch=(error)=>{
+    if(error.response)
+      toast.error('Invalid URL Request', toastConfig);
+    else if(error.request)
+      toast.warning('Check your network connection', toastConfig);
+    else
+      toast.error('Oops!!! Something Went Wrong', toastConfig);
+  }
   useEffect(()=>{
     if(userLogInStatus===false){
       logOutUser()
@@ -33,9 +53,8 @@ function CustomerDashboard(){
   },[userLogInStatus])
   let openOffcanvas=()=>setShowOffcanvas(true);
   let openModal=(x)=>{
-    if(x===1){
+    if(x===1)
       setShowUpdateUserForm(true)
-    }
   }
   let closeOffcanvas=()=>setShowOffcanvas(false);
   let closeModal=(x)=>{
@@ -141,71 +160,18 @@ function CustomerDashboard(){
       .then(responseObj=>{
         setIsLoading(false)
         if(responseObj.data.message==='Profile updated'){
+          console.log(responseObj.data.message)
           alert("User credentials updated successfully...\nLogin action required!!!")
           logOutUser()
         }
-        else if(responseObj.data.message==='* Username already exists'){
+        else if(responseObj.data.message==='* Username already exists')
           setError('Username',{type:'required',message:responseObj.data.message})
-        }
-        else if(responseObj.data.message==='Profile updation unsuccessful'){
-          toast.error('Profile updation unsuccessful', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
+        else if(responseObj.data.message==='Profile updation unsuccessful')
+          toast.error('Profile updation unsuccessful', toastConfig)
       })
       .catch(err=>{
         setIsLoading(false)
-        if(err.response){
-          toast.error('Invalid URL Request', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else if(err.request){
-          toast.warning('Check your network connection', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else{
-          toast.error('Oops!!! Something went wrong', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
+        handleCatch(err)
       })
     }
   }
@@ -215,93 +181,15 @@ function CustomerDashboard(){
     axios.put(`http://localhost:3500/customers-api/update-profile-image/${currentUser.Username}`,formData)
     .then(responseObj=>{
       if(responseObj.data.message==='Profile image updated successfully'){
-        toast.success(responseObj.data.message, 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        });
+        toast.success(responseObj.data.message, toastConfig)
         setProfileImage(responseObj.data.image)
       }
-      else if(responseObj.data.message==='Profile image updation unsuccessful'){
-        toast.error(responseObj.data.message, 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        });
-      }
-      else if(responseObj.data.message==='Select only jpeg/jpg/png file'){
-        toast.warning(responseObj.data.message, 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        });
-      }
+      else if(responseObj.data.message==='Profile image updation unsuccessful')
+        toast.error(responseObj.data.message, toastConfig)
+      else if(responseObj.data.message==='Select only jpeg/jpg/png file')
+        toast.warning(responseObj.data.message, toastConfig)
     })
-    .catch(err=>{
-      if(err.response){
-        toast.error('Invalid URL Request', 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        })
-      }
-      else if(err.request){
-        toast.warning('Check your network connection', 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        })
-      }
-      else{
-        toast.error('Oops!!! Something went wrong', 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        })
-      }
-    })
+    .catch(err=>handleCatch(err))
   }
   return (
     <div className='customerdb'>
@@ -309,6 +197,7 @@ function CustomerDashboard(){
         <RiUserSettingsLine className='fs-4 fw-bold'/>
       </Button>
       <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512" style={{minWidth:'40px',minHeight:'40px'}} className='mt-3 cartIcon' onClick={()=>navigate('shop')}><path d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96zM252 160c0 11 9 20 20 20h44v44c0 11 9 20 20 20s20-9 20-20V180h44c11 0 20-9 20-20s-9-20-20-20H356V96c0-11-9-20-20-20s-20 9-20 20v44H272c-11 0-20 9-20 20z"/></svg>
+      <BiSolidPurchaseTag className='mt-3 mx-3 purchaseTag' style={{minWidth:'40px',minHeight:'40px'}} onClick={()=>navigate('orders')}/>
       <h2 className='text-center text-danger' style={{position:'absolute',left:'600px',top:'100px',fontWeight:'bold'}}>In Customers We Believe</h2>
       <div>
         <Offcanvas show={showOffcanvas} onHide={closeOffcanvas} style={{background:'#FFCC70'}}>
@@ -336,7 +225,12 @@ function CustomerDashboard(){
         <h3 className='text-danger fw-bold'><img src={profileImage} className='profile-image rounded displayImg' alt='Image Not Found'></img></h3>
         <button onClick={logOutUser} className='float-end btn btn-info text-light fw-bold logoutButton me-3 p-1 px-2'>LogOut<span><TbLogout className='mx-1 mb-1 fw-bold fs-5'/></span></button>
       </div>
-      <Modal show={showUpdateUserForm} onHide={()=>closeModal(1)} backdrop="static" centered className='modal'> {/*backdrop property ensures the modal to be closed on occurance of particular event (ex :- onClick event of button)*/}
+      <Modal 
+        show={showUpdateUserForm} 
+        onHide={()=>closeModal(1)} 
+        backdrop="static" 
+        centered 
+      >{/*backdrop property ensures the modal to be closed on occurance of particular event (ex :- onClick event of button)*/}
         <Modal.Header closeButton>
           <Modal.Title>Edit Profile</Modal.Title>
         </Modal.Header>

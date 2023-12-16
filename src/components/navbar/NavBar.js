@@ -22,7 +22,7 @@ function NavBar() {
   return (
     <div>
       <nav className="navbar navbar-expand-sm opacity-10 p-3">
-        <h2 className='fw-bold mx-4 heading1'>Fresh   'O    Farm <GiCorn className='mx-2'/></h2>
+        <h2 className='fw-bold mx-4 heading1'>Fresh 'O Farm<GiCorn className='mx-2'/></h2>
         <div className="collapse navbar-collapse" id="navbarSupportedContent">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item ">  

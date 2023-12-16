@@ -46,9 +46,16 @@ a.input-group-text{
     opacity: 100%;
 }
 .cartIcon{
-    fill: #379237;
+    fill: #ec2400;
 }
 .cartIcon:hover{
+    fill: #379237;
     cursor: pointer;
-    fill: #ec2400;
+}
+.purchaseTag{
+    fill: darkorange;
+}
+.purchaseTag:hover{
+    cursor: pointer;
+    fill: navy;
 }

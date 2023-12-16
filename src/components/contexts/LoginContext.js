@@ -1,9 +1,8 @@
-import {createContext,useState} from "react";
-import React from 'react'
+import {createContext,useState} from "react"
 import axios from 'axios'
 
 export const loginContext=createContext({})
-function LoginContext({children}) {
+function LoginContext({children}){
     let [currentUser,setCurrentUser]=useState({})
     let [logInError,setLoginError]=useState("")
     let [userLogInStatus,setUserLogInStatus]=useState(false)
@@ -36,11 +35,9 @@ function LoginContext({children}) {
         setUserLogInStatus(false)
     }
     return (
-        <div>
-            <loginContext.Provider value={[currentUser,logInError,userLogInStatus,logInUser,logOutUser,setLoginError]}>
-                {children}
-            </loginContext.Provider>
-        </div>
+        <loginContext.Provider value={[currentUser,logInError,userLogInStatus,logInUser,logOutUser,setLoginError]}>
+            {children}
+        </loginContext.Provider>    
     )
 }
 

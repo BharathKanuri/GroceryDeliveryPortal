@@ -99,12 +99,9 @@ customersApp.put('/update-profile/:username',expressAsyncHandler(async(req,res)=
             else
                 res.status(200).send({message:'Profile updation unsuccessful'})
         }
-        //If password!='' update username, password, email
         else{
             //Hash the password
             let hashedPassword=await bcryptjs.hash(modifiedCustomerObj.Password, 5)
-            //Replace plain password with hashed password
-            modifiedCustomerObj.Password=hashedPassword
             //Update modified user
             let updatedUser=await customersCollectionObj.updateOne(
                 {
@@ -113,13 +110,13 @@ customersApp.put('/update-profile/:username',expressAsyncHandler(async(req,res)=
                 {
                     $set:{
                             Username:modifiedCustomerObj.Username,
-                            Password:modifiedCustomerObj.Password,
+                            Password:hashedPassword,
                             Email:modifiedCustomerObj.Email
                         }
                 }
             )
-            if(updatedUser.acknowledged===true)
-                res.status(201).send({message:'Profile Updated'})
+            if(updatedUser.acknowledged)
+                res.status(201).send({message:'Profile updated'})
             else
                 res.status(200).send({message:'Profile updation unsuccessful'})
         }
@@ -141,10 +138,12 @@ customersApp.put('/update-profile-image/:username',multerObj.single('Updated-Cus
                 Username:usernameOfProfileToBeModified
             },
             {
-                $set:{Image:req.file.path}
+                $set:{
+                    Image:req.file.path
+                }
             }
         )
-        if(imageUpdation.acknowledged===true)
+        if(imageUpdation.acknowledged)
             res.status(201).send({message:'Profile image updated successfully',image:req.file.path})
         else
             res.status(200).send({message:'Profile image updation unsuccessful'})
@@ -164,36 +163,73 @@ customersApp.put('/modify-address/:username',expressAsyncHandler(async(req,res)=
             Username:username
         },
         {
-            $set:{Address:modifiedAddressObj}
+            $set:{
+                Address:modifiedAddressObj
+            }
         }
     )
-    if(addressUpdation.acknowledged===true)
+    if(addressUpdation.acknowledged)
         res.status(201).send({message:'Address updation successfull'})
     else
         res.status(200).send({message:'Address updation unsuccessful'})
 }))
-//Payment gateway
-customersApp.post('/payment-session', expressAsyncHandler(async(req,res)=>{
-    const {price, quantity} = req.body;
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card','upi'],
-      line_items: [
+//Get orders
+customersApp.get("/get-orders/:username",expressAsyncHandler(async(req,res)=>{
+    //Get customersCollectionObj
+    const customersCollectionObj=req.app.get("customersCollectionObj")
+    //Get username from url
+    let username=req.params.username
+    //Get all orders
+    let orders=await customersCollectionObj.findOne(
         {
-          price_data: {
-            currency: 'inr',
-            product_data: {
-              name: 'Your Product',
-            },
-            unit_amount: price // Convert price to cents
-          },
-          quantity,
+            Username:username
         },
-      ],
-      mode: 'payment',
-      success_url: 'http://localhost:3000/success', // Redirect to success page
-      cancel_url: 'http://localhost:3000/cancel', // Redirect to cancel page
-    })
-    res.json({ id: session.id });
+        {
+            projection:{_id:0,Orders:1}
+        }
+    )
+    if(Object.keys(orders).length===0)
+        res.status(200).send({message:"Your order history is empty!!!"})
+    else
+        res.status(201).send({message:orders.Orders})
 }))
-  
+//Cancel order
+customersApp.put("/cancel-order/:username",expressAsyncHandler(async(req,res)=>{
+    //Get customersCollectionObj
+    const customersCollectionObj=req.app.get("customersCollectionObj")
+    //Get farmersCollectionObj
+    const farmersCollectionObj=req.app.get("farmersCollectionObj")
+    //Get username from url
+    let username=req.params.username
+    //Get order key, order owner
+    let {orderKey,orderOwner,addressKey}=req.body
+    //Cancel order updation on customer side
+    let orderObj=await customersCollectionObj.updateOne(
+        {
+            Username:username
+        },
+        {
+            $set:{
+                [`Orders.${orderKey}.Status`]:"Cancelled",
+                [`Orders.${orderKey}.DeliveryStatus`]:"Cancelled"
+            }
+        }
+    )
+    //Cancel order updation on farmer side
+    let deliveryObj=await farmersCollectionObj.updateOne(
+        {
+            Username:orderOwner
+        },
+        {
+            $set:{
+                [`Deliveries.${addressKey}.${orderKey}.Status`]:"Cancelled"
+            }
+        }
+    )
+    if(orderObj.acknowledged && deliveryObj.acknowledged)
+        res.status(201).send({message:"Order successfully cancelled"})
+    else
+        res.status(200).send({message:"Order cancellation failed"})
+}))
+
 module.exports=customersApp

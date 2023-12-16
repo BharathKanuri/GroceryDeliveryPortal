@@ -8,7 +8,7 @@ import {FaAddressCard} from "react-icons/fa6";
 import {useState,useEffect,useContext} from 'react'
 import {loginContext} from '../contexts/LoginContext'
 import {IoReceipt} from "react-icons/io5"
-import {loadStripe} from '@stripe/stripe-js'
+import {RotatingLines} from 'react-loader-spinner'
 
 function Shop() {
   let [currentUser,,userLogInStatus]=useContext(loginContext)
@@ -20,8 +20,11 @@ function Shop() {
   let [openAddressModal,setOpenAddressModal]=useState(false)
   let [stockCount,setStockCount]=useState(1)
   let [curAddress,setCurAddress]=useState(currentUser.Address)
-  let [showBillPayment,setShowBillPayment]=useState(false)
   let [curProduct,setCurProduct]=useState({})
+  let [curProductOwner,setCurProductOwner]=useState(null)
+  let [showBillPayment,setShowBillPayment]=useState(false)
+  let [executeShop,setExecuteShop]=useState(false)
+  let [isLoading,setIsLoading]=useState(false)
   let openSetAddressModal=()=>{
     setError('Name')
     setError('PhoneNo')
@@ -29,23 +32,42 @@ function Shop() {
     setError('Street')
     setError('Locality')
     setError('State')
-    setValue('Name',curAddress.Name)
-    setValue('PhoneNo',curAddress.PhoneNo)
-    setValue('HouseNo',curAddress.HouseNo)
-    setValue('Street',curAddress.Street)
-    setValue('Locality',curAddress.Locality)
-    setValue('State',curAddress.State)
+    setValue('Name',curAddress?.Name)
+    setValue('PhoneNo',curAddress?.PhoneNo)
+    setValue('HouseNo',curAddress?.HouseNo)
+    setValue('Street',curAddress?.Street)
+    setValue('Locality',curAddress?.Locality)
+    setValue('State',curAddress?.State)
+    setValue('Key',curAddress?.Key)
     setOpenAddressModal(true)
   }
   let incStockCount=()=>{
     if(stockCount<curProduct.Stock)
       setStockCount(stockCount+1)
   }
-  let decStockCount=(curProd)=>{
+  let decStockCount=()=>{
     if(stockCount>1)
       setStockCount(stockCount-1)
   }
-
+  let toastConfig={
+    position: "top-center",
+    autoClose: 7500,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+    style:{width:'325px'}
+  }
+  let handleCatch=(error)=>{
+    if(error.response)
+      toast.error('Invalid URL Request', toastConfig);
+    else if(error.request)
+      toast.warning('Check your network connection', toastConfig);
+    else
+      toast.error('Oops!!! Something Went Wrong', toastConfig);
+  }
   useEffect(()=>{
     if(userLogInStatus===true){
       axios.get(`http://localhost:3500/farmers-api/get-all-products`)
@@ -54,56 +76,11 @@ function Shop() {
                 setAllProducts(response.data.message)
                 setErr('')
             }
-            else if(response.status===200){
+            else if(response.status===200)
                 setErr(response.data.message)
-            }
           })
-          .catch(err=>{
-            if(err.response){
-              toast.error('Invalid URL Request', 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
-            else if(err.request){
-              toast.warning('Check your network connection', 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
-            else{
-              toast.error('Oops!!! Something Went Wrong', 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
-          })
-        }
-      },[])
+          .catch(err=>handleCatch(err))}
+      },[executeShop])
     let saveAddress=()=>{
       let address=getValues()
       let requiredFields = ['Name', 'PhoneNo', 'HouseNo', 'Street', 'Locality', 'State'], hasErrors=false
@@ -119,97 +96,53 @@ function Shop() {
         else
           setError(field,{type:''})
       })
-      if(hasErrors===true){
+      if(hasErrors===true)
         return
-      }
       else if(userLogInStatus===true){
+        //Enforce timestamp as unique key to each address object
+        let key=Date.now().toString()
+        address.Key=key
         axios.put(`http://localhost:3500/customers-api/modify-address/${currentUser.Username}`,address)
         .then(responseObj=>{
           if(responseObj.data.message==='Address updation successfull'){
-            toast.info(responseObj.data.message, 
-            {
-              position: "top-center",
-              autoClose: 7500,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "colored",
-              style:{width:'325px'}
-            })
+            toast.info(responseObj.data.message, toastConfig)
             setCurAddress(address)
             setShowBillPayment(true)
            }
-          else if(responseObj.status===200){
-            toast.error(responseObj.data.message, 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
+          else if(responseObj.status===200)
+            toast.error(responseObj.data.message, toastConfig)
           })
-          .catch(err=>{
-            if(err.response){
-              toast.error('Invalid URL Request', 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
-            else if(err.request){
-              toast.warning('Check your network connection', 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
-            else{
-              toast.error('Oops!!! Something went wrong', 
-              {
-                position: "top-center",
-                autoClose: 7500,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-                theme: "colored",
-                style:{width:'325px'}
-              })
-            }
-          })
+          .catch(err=>handleCatch(err))
         }
-    }
+      }
+    let order=()=>{
+      setIsLoading(true)
+      curProduct.Status="Ordered"
+      curAddress.Username=currentUser.Username
+      let orderData=[curProductOwner,curProduct,stockCount,curAddress]
+      axios.put(`http://localhost:3500/farmers-api/order-product/${currentUser.Username}`,orderData)
+      .then(response=>{
+        setIsLoading(false)
+        if(response.data.message==='Order placed successfully')
+          toast.success(response.data.message, toastConfig)
+        else if(response.status===200)
+          toast.error(response.data.message, toastConfig)
+          setOpenAddressModal(false)
+          setExecuteShop(!executeShop)
+      })
+      .catch(err=>{
+        setIsLoading(false)
+        handleCatch(err)
+      })
+    } 
   return (
     <div className='pt-1'>
         {err==='Products are unavailable currently' && <p className='text-center text-primary bg-dark p-2'>{err}</p>}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-6" style={{marginLeft:'-7.5px',marginRight:'-80px'}}>
           {
-            allProducts?.map((farmer,id)=>
-                Object.values(farmer.Products).map((product,key)=>  
-                <div className="col" key={id} >
+            allProducts?.map((farmer,id)=> 
+              Object.values(farmer.Products).map((product,key)=> 
+                <div className="col" key={id} onMouseEnter={()=>setCurProductOwner(farmer.Username)}>
                   <div className="card mb-5 shopCard" style={{maxWidth:'300px'}} key={key} onMouseEnter={()=>{setCurProduct(product);setStockCount(1)}}>
                     <Carousel indicators={false}>      
                     {
@@ -217,10 +150,10 @@ function Shop() {
                     }
                     </Carousel>
                     <div className="card-body" style={{maxHeight:'170px'}}>
-                      <h5 className="card-header fs-5 bg-dark text-light rounded">{product.Name}<span className='float-end pe-2 px-2 rounded mt-1' style={{background:'darkorange',fontSize:'15px'}}>In Stock - {product.Stock}</span></h5>  
+                      <h5 className="card-header fs-5 bg-dark text-light rounded">{product.Name}<span className='float-end pe-2 px-2 rounded mt-1' style={{background:'darkorange',fontSize:'15px'}}>{product.Stock>0?"In Stock - "+product.Stock:"Out of Stock"}</span></h5>  
                       <h5 className='text-danger card-body'>Quantity : {product.Quantity} {product.Measurement}</h5>
                       {
-                        product.Key===curProduct.Key ? <Button className='card-footer rounded text-light float-end' style={{background:'#82954B',border:'none'}} onClick={openSetAddressModal}>Buy<span className='pe-2 px-2 mx-1 rounded text-dark' style={{background:'#EFD345'}}>{product.Price * stockCount}₹</span></Button>
+                        product.Key===curProduct.Key ? <Button className='card-footer rounded text-light float-end' style={{background:'#82954B',border:'none'}} onClick={openSetAddressModal} disabled={product.Stock===0}>Buy<span className='pe-2 px-2 mx-1 rounded text-dark' style={{background:'#EFD345'}}>{product.Price * stockCount}₹</span></Button>
                         : <Button className='card-footer rounded text-light float-end' style={{background:'#82954B',border:'none'}} onClick={openSetAddressModal}>Buy<span className='pe-2 px-2 mx-1 rounded text-dark' style={{background:'#EFD345'}}>{product.Price}₹</span></Button>
                       }
                       <div className='d-flex m-auto'>
@@ -360,7 +293,30 @@ function Shop() {
               <Button variant="warning me-2" onClick={saveAddress}>
                 Change & Proceed
               </Button>
-              <Button variant='success' onClick={()=>setShowBillPayment(true)}>
+              <Button variant='success' onClick={()=>{
+                let requiredFields = ['Name', 'PhoneNo', 'HouseNo', 'Street', 'Locality', 'State']
+                let hasErrors=false
+                requiredFields.forEach(field=>{
+                  if(curAddress===undefined || curAddress[field]===undefined)
+                    hasErrors=true
+                })
+                  if(hasErrors===false)
+                    setShowBillPayment(true)
+                  else if(hasErrors===true)
+                    toast.warning(`Please add address and click on "Change & Proceed"`, 
+                    {
+                      position: "top-center",
+                      autoClose: 7500,
+                      hideProgressBar: false,
+                      closeOnClick: true,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                      theme: "colored",
+                      style:{width:'325px'}
+                    })
+                }}
+              >
                 Continue
               </Button>
             </div> :
@@ -368,8 +324,8 @@ function Shop() {
               <Button variant="danger me-2" onClick={()=>{setShowBillPayment(false);setOpenAddressModal(false)}}>
                 Cancel
               </Button>
-              <Button variant='success'>
-                Pay ₹{curProduct.Price * stockCount}
+              <Button variant='success' onClick={order}>
+                Order{isLoading && <RotatingLines height={25} width={25} strokeColor="white" strokeWidth="5"/>}
               </Button>
             </div>  
           }

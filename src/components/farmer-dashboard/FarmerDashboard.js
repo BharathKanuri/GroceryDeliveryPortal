@@ -14,11 +14,11 @@ import {TbLogout} from 'react-icons/tb'
 import {FcEditImage} from 'react-icons/fc'
 import {RiUserSettingsLine} from 'react-icons/ri'
 import {RotatingLines} from 'react-loader-spinner'
-import { GiFruitBowl } from "react-icons/gi"
+import {GiFruitBowl} from "react-icons/gi"
 
 function FarmerDashboard(){
   let navigate=useNavigate()
-  let [currentUser,,userLogInStatus,logOutUser]=useContext(loginContext)
+  let [currentUser,,userLogInStatus,,logOutUser]=useContext(loginContext)
   let [showOffcanvas,setShowOffcanvas]=useState(false);
   let [profileImage,setProfileImage]=useState(currentUser.Image)
   let {register,handleSubmit,setError,formState:{errors},setValue,getValues}=useForm()
@@ -31,6 +31,25 @@ function FarmerDashboard(){
   let [showProduct,setShowProduct]=useState(false)
   let [displayText,setDisplayText]=useState(false)
   let [isLoading,setIsLoading]=useState(false)
+  let toastConfig={
+    position: "top-center",
+    autoClose: 7500,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "colored",
+    style:{width:'325px'}
+  }
+  let handleCatch=(error)=>{
+    if(error.response)
+      toast.error('Invalid URL Request', toastConfig);
+    else if(error.request)
+      toast.warning('Check your network connection', toastConfig);
+    else
+      toast.error('Oops!!! Something Went Wrong', toastConfig);
+  }
   useEffect(()=>{
     if(userLogInStatus===false){
       logOutUser()
@@ -163,7 +182,7 @@ function FarmerDashboard(){
     setError('Email')
     if(validateUsername(modifiedFarmer) || validatePassword(modifiedFarmer) || validateEmail(modifiedFarmer))
       return
-    else if(useUpdateUserForm===true){
+    else{
       setIsLoading(true)
       axios.put(`http://localhost:3500/farmers-api/update-profile/${currentUser.Username}`,modifiedFarmer)
       .then(responseObj=>{
@@ -172,68 +191,14 @@ function FarmerDashboard(){
           alert("User credentials updated successfully...\nLogin action required!!!")
           logOutUser()
         }
-        else if(responseObj.data.message==='* Username already exists'){
+        else if(responseObj.data.message==='* Username already exists')
           setError('Username',{type:'required',message:responseObj.data.message})
-        }
-        else if(responseObj.data.message==='Profile updation unsuccessful'){
-          toast.error('Profile updation unsuccessful', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
+        else if(responseObj.data.message==='Profile updation unsuccessful')
+          toast.error('Profile updation unsuccessful', toastConfig)
       })
       .catch(err=>{
         setIsLoading(false)
-        if(err.response){
-          toast.error('Invalid URL Request', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else if(err.request){
-          toast.warning('Check your network connection', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else{
-          toast.error('Oops!!! Something went wrong', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
+        handleCatch(err)
       })
     }
   }
@@ -243,93 +208,15 @@ function FarmerDashboard(){
     axios.put(`http://localhost:3500/farmers-api/update-profile-image/${currentUser.Username}`,formData)
     .then(responseObj=>{
       if(responseObj.data.message==='Profile image updated successfully'){
-        toast.success(responseObj.data.message, 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        });
+        toast.success(responseObj.data.message, toastConfig)
         setProfileImage(responseObj.data.image)
       }
-      else if(responseObj.data.message==='Profile image updation unsuccessful'){
-        toast.error(responseObj.data.message, 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        });
-      }
-      else if(responseObj.data.message==='Select only jpeg/jpg/png file'){
-        toast.warning(responseObj.data.message, 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        });
-      }
+      else if(responseObj.data.message==='Profile image updation unsuccessful')
+        toast.error(responseObj.data.message, toastConfig)
+      else if(responseObj.data.message==='Select only jpeg/jpg/png file')
+        toast.warning(responseObj.data.message, toastConfig)
     })
-    .catch(err=>{
-      if(err.response){
-        toast.error('Invalid URL Request', 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        })
-      }
-      else if(err.request){
-        toast.warning('Check your network connection', 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        })
-      }
-      else{
-        toast.error('Oops!!! Something went wrong', 
-        {
-          position: "top-center",
-          autoClose: 7500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          style:{width:'325px'}
-        })
-      }
-    })
+    .catch(err=>handleCatch(err))
   }
   let onImagesSelect=(eventObj)=>{
     setError("Images")
@@ -351,18 +238,7 @@ function FarmerDashboard(){
       .then(responseObj=>{
         setIsLoading(false)
         if(responseObj.data.message==='Product added'){
-          toast.success('Product added to store', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
+          toast.success('Product added to store', toastConfig)
           setShowProduct(!showProduct)
           setValue('Name')
           setValue('Quantity')
@@ -371,54 +247,12 @@ function FarmerDashboard(){
           setValue('Images')
           setValue('Stock')
         }
-        else if(responseObj.data.message==='* Select only jpeg/jpg/png files'){
+        else if(responseObj.data.message==='* Select only jpeg/jpg/png files')
           setError("Images",{message:responseObj.data.message,type:'required'})
-        }
       })
       .catch(err=>{
         setIsLoading(false)
-        if(err.response){
-          toast.error('Invalid URL Request', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else if(err.request){
-          toast.warning('Check your network connection', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
-        else{
-          toast.error('Oops!!! Something went wrong', 
-          {
-            position: "top-center",
-            autoClose: 7500,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-            theme: "colored",
-            style:{width:'325px'}
-          })
-        }
+        handleCatch(err)
       })
     }
   }
@@ -429,6 +263,7 @@ function FarmerDashboard(){
       </Button>
       <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512" style={{minWidth:'40px',minHeight:'40px'}} onClick={()=>openModal(2)} className='box mt-3'><path d="M256 48c0-26.5 21.5-48 48-48H592c26.5 0 48 21.5 48 48V464c0 26.5-21.5 48-48 48H381.3c1.8-5 2.7-10.4 2.7-16V253.3c18.6-6.6 32-24.4 32-45.3V176c0-26.5-21.5-48-48-48H256V48zM571.3 347.3c6.2-6.2 6.2-16.4 0-22.6l-64-64c-6.2-6.2-16.4-6.2-22.6 0l-64 64c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0L480 310.6V432c0 8.8 7.2 16 16 16s16-7.2 16-16V310.6l36.7 36.7c6.2 6.2 16.4 6.2 22.6 0zM0 176c0-8.8 7.2-16 16-16H368c8.8 0 16 7.2 16 16v32c0 8.8-7.2 16-16 16H16c-8.8 0-16-7.2-16-16V176zm352 80V480c0 17.7-14.3 32-32 32H64c-17.7 0-32-14.3-32-32V256H352zM144 320c-8.8 0-16 7.2-16 16s7.2 16 16 16h96c8.8 0 16-7.2 16-16s-7.2-16-16-16H144z"/></svg>
       <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 576 512" style={{minWidth:'40px',minHeight:'40px'}} onClick={()=>navigate('store')} className='store mt-3 mx-3'><path d="M547.6 103.8L490.3 13.1C485.2 5 476.1 0 466.4 0H109.6C99.9 0 90.8 5 85.7 13.1L28.3 103.8c-29.6 46.8-3.4 111.9 51.9 119.4c4 .5 8.1 .8 12.1 .8c26.1 0 49.3-11.4 65.2-29c15.9 17.6 39.1 29 65.2 29c26.1 0 49.3-11.4 65.2-29c15.9 17.6 39.1 29 65.2 29c26.2 0 49.3-11.4 65.2-29c16 17.6 39.1 29 65.2 29c4.1 0 8.1-.3 12.1-.8c55.5-7.4 81.8-72.5 52.1-119.4zM499.7 254.9l-.1 0c-5.3 .7-10.7 1.1-16.2 1.1c-12.4 0-24.3-1.9-35.4-5.3V384H128V250.6c-11.2 3.5-23.2 5.4-35.6 5.4c-5.5 0-11-.4-16.3-1.1l-.1 0c-4.1-.6-8.1-1.3-12-2.3V384v64c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V384 252.6c-4 1-8 1.8-12.3 2.3z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 640 512" style={{minWidth:'40px',minHeight:'40px'}} onClick={()=>navigate('deliveries')} className='mt-3 deliveryIcon'><path d="M48 0C21.5 0 0 21.5 0 48V368c0 26.5 21.5 48 48 48H64c0 53 43 96 96 96s96-43 96-96H384c0 53 43 96 96 96s96-43 96-96h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V288 256 237.3c0-17-6.7-33.3-18.7-45.3L512 114.7c-12-12-28.3-18.7-45.3-18.7H416V48c0-26.5-21.5-48-48-48H48zM416 160h50.7L544 237.3V256H416V160zM112 416a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm368-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"/></svg>
       <h2 className='text-center' style={{position:'absolute',left:'600px',top:'100px',fontWeight:'bold',color:'darkorange'}}>In Farmers We Trust</h2>
       <div>
         <Offcanvas show={showOffcanvas} onHide={closeOffcanvas} style={{background:'#dcffa1'}}>
@@ -462,7 +297,6 @@ function FarmerDashboard(){
             show={showUpdateUserModal} 
             onHide={()=>{closeModal(1)}} 
             backdrop="static"
-            keyboard={false}
             centered
           >
             <Modal.Header closeButton>
@@ -507,8 +341,8 @@ function FarmerDashboard(){
               </form>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick={()=>{closeModal(1)}}>Close</Button>
-              <Button className='mt-1' onClick={()=>saveUser} disabled={isLoading}>
+              <Button variant="secondary" onClick={()=>closeModal(1)}>Close</Button>
+              <Button className='mt-1' onClick={saveUser} disabled={isLoading}>
                 Save
                 {
                   isLoading===true ? 
