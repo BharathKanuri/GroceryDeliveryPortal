@@ -18,62 +18,59 @@ function SignUp() {
     setSelectedFile(eventObj.target.files[0])
   }
   let formSubmit=async(userObj)=>{
-    if(userObj.Username.split(' ').length>1)
-      setError("Username",{type:"required",message:'* No white spaces are allowed'})
+    let usernameErr=true,passwordErr=true,emailErr=true;
+    var usernamePat=/^[a-zA-Z\s_]+$/
+    if(usernamePat.test(userObj.Username)===false)
+      setError("Username",{type:"required",message:'* Please enter a valid username [a-zA-Z_ ]'})
     else{
-      let digit=0,lowerAlpha=0,capitalAlpha=0,specialChar=0
-      let s=userObj.Password
-      for(let i=0;i<s.length;i++){
-          let c=s.charAt(i)
-          if(c>='0' && c<='9')
-              digit=1
-          else if(c>='a' && c<='z')
-              lowerAlpha=1
-          else if (c>='A' && c<='Z')
-              capitalAlpha=1
-          else if((c>=' ' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~'))
-              specialChar=1
-          else
-              break
-      }
-      if(!digit)
-          setError("Password",{type:'required',message:'* Password must contain a digit [0-9]'})
-      else if(!lowerAlpha)
-        setError("Password",{type:'required',message:'* Password must contain a lowercase letter [a-z]'})
-      else if(!capitalAlpha)
-        setError("Password",{type:'required',message:'* Password must contain a uppercase letter [A-Z]'})
-      else if(!specialChar)
-        setError("Password",{type:'required',message:'* Password must contain a special character [!@#$_]'})
-      else{
-        setIsLoading(true)
-        //FormData object wraps data object on form submission and selected file
-        let formData=new FormData()
-        formData.append("User",JSON.stringify(userObj))//object parsed to string
-        formData.append('Photo',selectedFile)//binary large object(blob)
-        await axios.post(`http://localhost:3500/${userObj.Type}s-api/sign-up`,formData)
-        .then(responseObj=>{
-          setIsLoading(false)
-            if(responseObj.status===201){
-              setErr("")
-              navigate("/login")
-            }
-            else if(responseObj.status===200){
-              if(responseObj.data.message==='* Select only jpeg/jpg/png file')
-                setError("Image",{message:responseObj.data.message,type:'required'})
-              else
-                setError('Username',{message:responseObj.data.message,type:'required'})
-            }
+      setError("Username",'')
+      usernameErr=false
+    }
+    var passwordPat=/^(?=.*[@#$%_])(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/
+    if(passwordPat.test(userObj.Password)===false)
+      setError("Password",{type:"required",message:'* Please enter a valid password (a-z, A-Z, 0-9, (_@#$%))'})
+    else{
+      setError("Password",'')
+      passwordErr=false
+    }
+    var emailPat=/^[a-zA-Z0-9_\-\.]+[@][a-z]+[\.][a-z]{2,3}$/
+    if(emailPat.test(userObj.Email)===false)
+      setError('Email',{type:"required",message:'* Please enter a valid email (ex :- jimmy_carter@gmail.com)'})
+    else{
+      setError('Email','')
+      emailErr=false
+    }
+    if(usernameErr||passwordErr||emailErr)
+      return
+    else{
+      setIsLoading(true)
+      //FormData object wraps data object on form submission and selected file
+      let formData=new FormData()
+      formData.append("User",JSON.stringify(userObj))//object parsed to string
+      formData.append('Photo',selectedFile)//binary large object(blob)
+      await axios.post(`http://localhost:3500/${userObj.Type}s-api/sign-up`,formData)
+      .then(responseObj=>{
+        setIsLoading(false)
+          if(responseObj.status===201){
+            setErr("")
+            navigate("/login")
+          }
+          else if(responseObj.status===200){
+            if(responseObj.data.message==='* Select only jpeg/jpg/png file')
+              setError("Image",{message:responseObj.data.message,type:'required'})
+            else
+              setError('Username',{message:responseObj.data.message,type:'required'})
+          }
         })
-        .catch(err=>{
-          setIsLoading(false)
-          if(err.response)
-            setErr("Invalid URL request...")
-          else if(err.request)
-            setErr("Check your network connection...")
-          else
-            setErr("Oops!!! Something went wrong...")
-        })
-      }
+      .catch(err=>{
+        setIsLoading(false)
+        if(err.response)
+          setErr("Invalid URL request...")
+        else if(err.request)
+          setErr("Check your network connection...")
+        else
+          setErr("Oops!!! Something went wrong...")
+      })
     }
   }
   return (
@@ -89,12 +86,12 @@ function SignUp() {
                 className='form-control'
                 placeholder='Username'
                 id='username'
-                {...register("Username",{required:'* Username Required',minLength:10,maxLength:20})}
+                {...register("Username",{required:'* Username required',minLength:6,maxLength:23})}
               />
               <label htmlFor='username'>Username</label>
               {errors.Username?.type==='required' && <p className='text-danger fw-semibold errors'>{errors.Username.message}</p>}
-              {errors.Username?.type==='minLength' && <p className='text-danger fw-semibold errors'>* min length should be 10</p>}
-              {errors.Username?.type==='maxLength' && <p className='text-danger fw-semibold errors'>* max length should be 20</p>}
+              {errors.Username?.type==='minLength' && <p className='text-danger fw-semibold errors'>* Min length should be 6</p>}
+              {errors.Username?.type==='maxLength' && <p className='text-danger fw-semibold errors'>* Max length should be 23</p>}
             </div>
             <div className='input-group form-floating'>
               <input
@@ -102,13 +99,13 @@ function SignUp() {
                   id='password'
                   placeholder='Password'
                   className='form-control'
-                  {...register("Password",{required:'* Password Required',minLength:10,maxLength:20})}
+                  {...register("Password",{required:'* Password required',minLength:12,maxLength:20})}
               />
               <a onClick={()=>{setShowPassword(!showPassword)}} className='input-group-text rounded-end text-dark fs-5'>{showPassword?<AiFillEyeInvisible/>:<AiFillEye/>}</a>
-              <label htmlFor='password'>Password (a-z, A-Z, 0-9, (!@#$_...))</label>
+              <label htmlFor='password'>Password&nbsp;&nbsp;&nbsp;(a-z, A-Z, 0-9, (_@#$%))</label>
             </div>
               {errors.Password?.type==='required' && <p className='text-danger fw-semibold errors'>{errors.Password.message}</p>}
-              {errors.Password?.type==='minLength' && <p className='text-danger fw-semibold errors'>* Min length should be 10</p>}
+              {errors.Password?.type==='minLength' && <p className='text-danger fw-semibold errors'>* Min length should be 12</p>}
               {errors.Password?.type==='maxLength' && <p className='text-danger fw-semibold errors'>* Max length should be 20</p>}
             <div className='form-floating mt-4'>
               <input
@@ -116,22 +113,22 @@ function SignUp() {
                 className='form-control'
                 id='email'
                 placeholder='email'
-                {...register("Email",{required:true})}
+                {...register("Email",{required:'* Email required'})}
               />
-              <label htmlFor='email'>Email</label>
-              {errors.Email?.type==='required'&&<p className='text-danger fw-semibold errors'>* Required Field</p>}
+              <label htmlFor='email'>Email&nbsp;&nbsp;&nbsp;(ex :- jimmy.carter@gmail.com)</label>
+              {errors.Email?.type==='required'&&<p className='text-danger fw-semibold errors'>{errors.Email.message}</p>}
             </div>
             <div>
               <select
                   className='form-select mt-4'
-                  {...register("Type",{required:'* Select user type'})}
+                  {...register("Type",{required:true})}
               >
                   <option value=''>--Select User Type--</option>
                   <option value="customer">Customer</option>
                   <option value="farmer">Farmer</option>
               </select>
             </div>
-            {errors.Type?.type==='required' && <p className='text-danger fw-semibold mb-4 errors'>{errors.Type.message}</p>}
+            {errors.Type?.type==='required' && <p className='text-danger fw-semibold mb-4 errors'>* Select user type</p>}
             <div className='mt-4 mb-4 form-floating'>
               <input
                 type='file'

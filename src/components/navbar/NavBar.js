@@ -2,7 +2,7 @@ import React from 'react'
 import './NavBar.css'
 import {NavLink} from 'react-router-dom';
 import {GiCorn} from 'react-icons/gi'
-import {useContext,useState,useEffect} from 'react';
+import {useContext} from 'react';
 import {loginContext} from '../contexts/LoginContext';
 import {FaUserLarge} from 'react-icons/fa6'
 import {GiFarmer} from 'react-icons/gi'

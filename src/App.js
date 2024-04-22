@@ -1,4 +1,3 @@
-import './components/root-layout/RootLayout'
 import {createBrowserRouter,RouterProvider} from 'react-router-dom'
 import RootLayout from './components/root-layout/RootLayout'
 import ErrorPage from './components/ErrorPage'

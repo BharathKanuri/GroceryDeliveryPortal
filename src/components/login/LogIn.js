@@ -36,7 +36,7 @@ function LogIn() {
                 className='form-control'
                 placeholder='Username'
                 id='username'
-                {...register("Username",{required:'* Username Required'})}
+                {...register("Username",{required:'* Username required'})}
               />
               <label htmlFor='username'>Username</label>
               {errors.Username?.type==='required' && <p className='text-danger fw-semibold errors'>{errors.Username.message}</p>}
@@ -47,7 +47,7 @@ function LogIn() {
                 className='form-control'
                 placeholder='Password'
                 id='password'
-                {...register("Password",{required:'* Password Required'})}
+                {...register("Password",{required:'* Password required'})}
               />
               <a onClick={()=>setShowPassword(!showPassword)} className='input-group-text rounded-end text-dark fs-5'>{showPassword?<AiFillEyeInvisible/>:<AiFillEye/>}</a>
               <label htmlFor='password'>Password</label>
