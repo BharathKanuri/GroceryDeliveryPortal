@@ -2,6 +2,7 @@ import './FarmerDashboard.css'
 import axios from 'axios'
 import {ToastContainer,toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import {validateUsername,validatePassword,validateEmail} from '../ValidateForm'
 import {useNavigate,Outlet} from 'react-router-dom'
 import {useState,useEffect,useContext} from 'react'
 import {loginContext} from '../contexts/LoginContext'
@@ -31,6 +32,8 @@ function FarmerDashboard(){
   let [showProduct,setShowProduct]=useState(false)
   let [displayText,setDisplayText]=useState(false)
   let [isLoading,setIsLoading]=useState(false)
+  let productProps=['Name','Quantity','Measurement','Price','Stock','Images']
+  let userProps=['Username','Password','Email']
   let toastConfig={
     position: "top-center",
     autoClose: 7500,
@@ -70,104 +73,21 @@ function FarmerDashboard(){
   let closeOffcanvas=()=>setShowOffcanvas(false);
   let closeModal=(x)=>{
     if(x===1){
-      setValue('Username')
-      setValue('Password')
-      setValue('Email')
-      setError('Username')
-      setError('Password')
-      setError('Email')
+      for(const idx in userProps){
+        setValue(userProps[idx])
+        setError(userProps[idx])
+      }
       setUseUpdateUserForm(false)
       setShowUpdateUserModal(false)
     }
     if(x===2){
-      setValue('Name')
-      setValue('Quantity')
-      setValue('Measurement')
-      setValue('Price')
-      setValue('Stock')
-      setValue('Images')
-      setError('Name')
-      setError('Quantity')
-      setError('Measurement')
-      setError('Price')
-      setError('Stock')
-      setError('Images')
+      for(const idx in productProps){
+        setValue(productProps[idx])
+        setError(productProps[idx])
+      }
       setUseAddProductForm(false)
       setShowAddProductModal(false)
     }
-  }
-  let validateUsername=(modifiedFarmer)=>{
-    if(modifiedFarmer.Username.length<10){
-      setError("Username",{type:"required",message:'* Min length should be 10'})
-      return true
-    }
-    else if(modifiedFarmer.Username.length>20){
-      setError("Username",{type:"required",message:'* Max length should be 20'})
-      return true
-    }
-    else if(modifiedFarmer.Username.split(' ').length>1){
-      setError("Username",{type:"required",message:'* No white spaces are allowed'})
-      return true
-    }
-    return false
-  }
-  let validatePassword=(modifiedFarmer)=>{
-    if(modifiedFarmer.Password!==''){
-      if(modifiedFarmer.Password.length<10){
-        setError("Password",{type:"required",message:'* Min length should be 10'})
-        return true
-      }
-      else if(modifiedFarmer.Password.length>20){
-        setError("Password",{type:"required",message:'* Max length should be 20'})
-        return true
-      }
-      else{
-        let digit=0,lowerAlpha=0,capitalAlpha=0,specialChar=0
-        let s=modifiedFarmer.Password
-        for(let i=0;i<s.length;i++){
-          let c=s.charAt(i)
-          if(c>='0' && c<='9')
-            digit=1
-          else if(c>='a' && c<='z')
-            lowerAlpha=1
-          else if (c>='A' && c<='Z')
-            capitalAlpha=1
-          else if((c>=' ' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~'))
-            specialChar=1
-          else
-            break
-        }
-        if(!digit){
-          setError("Password",{type:'required',message:'* Password must contain a digit [0-9]'})
-          return true
-        }
-        else if(!lowerAlpha){
-          setError("Password",{type:'required',message:'* Password must contain a lowercase letter [a-z]'})
-          return true
-        }
-        else if(!capitalAlpha){
-          setError("Password",{type:'required',message:'* Password must contain an uppercase letter [A-Z]'})
-          return true
-        }
-        else if(!specialChar){
-          setError("Password",{type:'required',message:'* Password must contain a special character [!@#$_]'})
-          return true
-        }
-      }
-      return false
-    }
-    return false
-  }
-  let validateEmail=(modifiedFarmer)=>{
-    if(modifiedFarmer.Email.length===0){
-      setError("Email",{type:"required",message:"* Email required"})
-      return true
-    }
-    else if(modifiedFarmer.Email.search('@')===-1){
-      setError("Email",{type:"required",message:"* Enter valid email"})
-      return true
-    }
-    return false
   }
   let editUser=()=>{
     openModal(1)
@@ -175,16 +95,17 @@ function FarmerDashboard(){
     setValue("Password",'')
     setValue("Email",currentUser.Email)
   }
-  let saveUser=()=>{
+  let saveUser=async(f=0)=>{
     let modifiedFarmer=getValues()
-    setError('Username')
-    setError('Password')
-    setError('Email')
-    if(validateUsername(modifiedFarmer) || validatePassword(modifiedFarmer) || validateEmail(modifiedFarmer))
+    for(const idx in userProps)
+      setError(userProps[idx])
+    if(modifiedFarmer.Password.length>0)
+      f=1
+    if(validateUsername(modifiedFarmer,setError) || validatePassword(modifiedFarmer,setError,f) || validateEmail(modifiedFarmer,setError))
       return
     else{
       setIsLoading(true)
-      axios.put(`http://localhost:3500/farmers-api/update-profile/${currentUser.Username}`,modifiedFarmer)
+      await axios.put(`http://localhost:3500/farmers-api/update-profile/${currentUser.Username}`,modifiedFarmer)
       .then(responseObj=>{
         setIsLoading(false)
         if(responseObj.data.message==='Profile updated'){
@@ -202,10 +123,10 @@ function FarmerDashboard(){
       })
     }
   }
-  let onFileSelect=(eventObj)=>{
+  let onFileSelect=async(eventObj)=>{
     let formData=new FormData()
     formData.append('Updated-Farmer-Photo',eventObj.target.files[0])
-    axios.put(`http://localhost:3500/farmers-api/update-profile-image/${currentUser.Username}`,formData)
+    await axios.put(`http://localhost:3500/farmers-api/update-profile-image/${currentUser.Username}`,formData)
     .then(responseObj=>{
       if(responseObj.data.message==='Profile image updated successfully'){
         toast.success(responseObj.data.message, toastConfig)
@@ -222,19 +143,19 @@ function FarmerDashboard(){
     setError("Images")
     setSelectedImages(eventObj.target.files)
   }
-  let addProduct=(productObj)=>{
+  let addProduct=async(productObj)=>{
     let formData=new FormData()
     formData.append("Product",JSON.stringify(productObj))
     for(let i=0;i<selectedImages.length;i++){
       formData.append("Images", selectedImages[i]);
     }
-    if(productObj.Images.length < 2)
+    if(productObj.Images.length<2)
       setError("Images",{message:'* Select atleast 2 images',type:'required'})
-    else if(productObj.Images.length > 4)
+    else if(productObj.Images.length>4)
       setError("Images",{message:'* File limit exceeded',type:'required'})
     else if(useAddProductForm===true){
       setIsLoading(true)
-      axios.put(`http://localhost:3500/farmers-api/add-product/${currentUser.Username}`,formData)
+      await axios.put(`http://localhost:3500/farmers-api/add-product/${currentUser.Username}`,formData)
       .then(responseObj=>{
         setIsLoading(false)
         if(responseObj.data.message==='Product added'){
@@ -256,7 +177,7 @@ function FarmerDashboard(){
       })
     }
   }
-  return (
+  return(
     <div className='farmerdb'>
       <Button className='mt-3 mx-3' variant='dark' onClick={openOffcanvas}>
         <RiUserSettingsLine className='fs-4 fw-bold'/>

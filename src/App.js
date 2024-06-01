@@ -12,7 +12,7 @@ import Shop from './components/shop/Shop'
 import Delivery from './components/delivery/Delivery'
 import Order from './components/order/Order'
 
-function App() {
+function App(){
   let router=createBrowserRouter([
     {
       path:'/',
@@ -70,7 +70,7 @@ function App() {
       ]
     }
   ])
-  return (
+  return(
     <RouterProvider router={router}></RouterProvider>
   );
 }

@@ -2,6 +2,7 @@ import './CustomerDashboard.css'
 import axios from 'axios'
 import {ToastContainer,toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import {validateUsername,validatePassword,validateEmail} from '../ValidateForm'
 import {useNavigate,Outlet} from 'react-router-dom'
 import {useContext,useEffect,useState} from 'react'
 import {loginContext} from '../contexts/LoginContext'
@@ -19,13 +20,14 @@ import {BiSolidPurchaseTag} from "react-icons/bi"
 function CustomerDashboard(){
   let navigate=useNavigate()
   let [currentUser,,userLogInStatus,,logOutUser]=useContext(loginContext)
-  let [showOffcanvas,setShowOffcanvas]=useState(false);
+  let [showOffcanvas,setShowOffcanvas]=useState(false)
   let [profileImage,setProfileImage]=useState(currentUser.Image)
   let {register,formState:{errors},setError,setValue,getValues}=useForm()
   let [showUpdateUserForm,setShowUpdateUserForm]=useState(false)
   let [showPassword,setShowPassword]=useState(false)
   let [displayText,setDisplayText]=useState(false)
   let [isLoading,setIsLoading]=useState(false)
+  let userProps=['Username','Password','Email']
   let toastConfig={
     position: "top-center",
     autoClose: 7500,
@@ -59,87 +61,12 @@ function CustomerDashboard(){
   let closeOffcanvas=()=>setShowOffcanvas(false);
   let closeModal=(x)=>{
     if(x===1){
-      setValue('Username')
-      setValue('Password')
-      setValue('Email')
-      setError('Username')
-      setError('Password')
-      setError('Email')
+      for(const idx in userProps){
+        setValue(userProps[idx])
+        setError(userProps[idx])
+      }
       setShowUpdateUserForm(false)
     }
-  }
-  let validateUsername=(modifiedCustomer)=>{
-    if(modifiedCustomer.Username.length<10){
-      setError("Username",{type:"required",message:'* Min length should be 10'})
-      return true
-    }
-    else if(modifiedCustomer.Username.length>20){
-      setError("Username",{type:"required",message:'* Max length should be 20'})
-      return true
-    }
-    else if(modifiedCustomer.Username.split(' ').length>1){
-      setError("Username",{type:"required",message:'* No white spaces are allowed'})
-      return true
-    }
-    return false
-  }
-  let validatePassword=(modifiedCustomer)=>{
-    if(modifiedCustomer.Password!==''){
-      if(modifiedCustomer.Password.length<10){
-        setError("Password",{type:"required",message:'* Min length should be 10'})
-        return true
-      }
-      else if(modifiedCustomer.Password.length>20){
-        setError("Password",{type:"required",message:'* Max length should be 20'})
-        return true
-      }
-      else{
-        let digit=0,lowerAlpha=0,capitalAlpha=0,specialChar=0
-        let s=modifiedCustomer.Password
-        for(let i=0;i<s.length;i++){
-          let c=s.charAt(i)
-          if(c>='0' && c<='9')
-            digit=1
-          else if(c>='a' && c<='z')
-            lowerAlpha=1
-          else if (c>='A' && c<='Z')
-            capitalAlpha=1
-          else if((c>=' ' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~'))
-            specialChar=1
-          else
-            break
-        }
-        if(!digit){
-          setError("Password",{type:'required',message:'* Password must contain a digit [0-9]'})
-          return true
-        }
-        else if(!lowerAlpha){
-          setError("Password",{type:'required',message:'* Password must contain a lowercase letter [a-z]'})
-          return true
-        }
-        else if(!capitalAlpha){
-          setError("Password",{type:'required',message:'* Password must contain an uppercase letter [A-Z]'})
-          return true
-        }
-        else if(!specialChar){
-          setError("Password",{type:'required',message:'* Password must contain a special character [!@#$_]'})
-          return true
-        }
-      }
-      return false
-    }
-    return false
-  }
-  let validateEmail=(modifiedCustomer)=>{
-    if(modifiedCustomer.Email.length===0){
-      setError("Email",{type:"required",message:"* Email required"})
-      return true
-    }
-    else if(modifiedCustomer.Email.search('@')===-1){
-      setError("Email",{type:"required",message:"* Enter valid email"})
-      return true
-    }
-    return false
   }
   let editUser=()=>{
     openModal(1)
@@ -147,16 +74,17 @@ function CustomerDashboard(){
     setValue("Password",'')
     setValue("Email",currentUser.Email)
   }
-  let saveUser=()=>{
+  let saveUser=async(f=0)=>{
     let modifiedCustomer=getValues()
-    setError('Username')
-    setError('Password')
-    setError('Email')
-    if(validateUsername(modifiedCustomer) || validatePassword(modifiedCustomer) || validateEmail(modifiedCustomer))
+    for(const idx in userProps)
+      setError(userProps[idx])
+    if(modifiedCustomer.Password.length>0)
+      f=1
+    if(validateUsername(modifiedCustomer,setError) || validatePassword(modifiedCustomer,setError,f) || validateEmail(modifiedCustomer,setError))
         return
     else{
       setIsLoading(true)
-      axios.put(`http://localhost:3500/customers-api/update-profile/${currentUser.Username}`,modifiedCustomer)
+      await axios.put(`http://localhost:3500/customers-api/update-profile/${currentUser.Username}`,modifiedCustomer)
       .then(responseObj=>{
         setIsLoading(false)
         if(responseObj.data.message==='Profile updated'){
@@ -175,10 +103,10 @@ function CustomerDashboard(){
       })
     }
   }
-  let onFileSelect=(eventObj)=>{
+  let onFileSelect=async(eventObj)=>{
     let formData=new FormData()
     formData.append('Updated-Customer-Photo',eventObj.target.files[0])
-    axios.put(`http://localhost:3500/customers-api/update-profile-image/${currentUser.Username}`,formData)
+    await axios.put(`http://localhost:3500/customers-api/update-profile-image/${currentUser.Username}`,formData)
     .then(responseObj=>{
       if(responseObj.data.message==='Profile image updated successfully'){
         toast.success(responseObj.data.message, toastConfig)
@@ -191,7 +119,7 @@ function CustomerDashboard(){
     })
     .catch(err=>handleCatch(err))
   }
-  return (
+  return(
     <div className='customerdb'>
       <Button className='mt-3 mx-3' variant='dark'  onClick={openOffcanvas}>
         <RiUserSettingsLine className='fs-4 fw-bold'/>

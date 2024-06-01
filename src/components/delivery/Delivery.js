@@ -63,9 +63,9 @@ function Delivery(){
       saveDeliveryStatus(curDeliveryStatusObj)
     }
   }
-  let saveDeliveryStatus=(deliveryStatusObj)=>{  
+  let saveDeliveryStatus=async(deliveryStatusObj)=>{  
     if(isDelivery)
-      axios.put(`http://localhost:3500/farmers-api/update-delivery-status/${currentUser.Username}`,deliveryStatusObj)
+      await axios.put(`http://localhost:3500/farmers-api/update-delivery-status/${currentUser.Username}`,deliveryStatusObj)
       .then(response=>{
           if(response.status===201){
             toast.info(response.data.message,toastConfig)
@@ -76,7 +76,7 @@ function Delivery(){
       })
       .catch(err=>handleCatch(err))
   }
-  return (
+  return(
     <div className='pt-1'>
       {err==='No orders to be delivered' && <p className='text-center text-primary bg-dark p-2'>{err}</p>}
       <div className='row row-cols-md-3 row-cols-sm-2 row-cols-1 d-flex justify-content-between'>

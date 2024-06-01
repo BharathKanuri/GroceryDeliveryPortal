@@ -1,4 +1,3 @@
-import React from 'react'
 import './NavBar.css'
 import {NavLink} from 'react-router-dom';
 import {GiCorn} from 'react-icons/gi'
@@ -7,7 +6,7 @@ import {loginContext} from '../contexts/LoginContext';
 import {FaUserLarge} from 'react-icons/fa6'
 import {GiFarmer} from 'react-icons/gi'
 
-function NavBar() {
+function NavBar(){
   let [currentUser,,userLogInStatus,,,setLoginError]=useContext(loginContext)
   const activeLink={
     color : 'blue',
@@ -19,7 +18,7 @@ function NavBar() {
     fontWeight:'bold',
     fontSize:'1.15rem'
   }
-  return (
+  return(
     <div>
       <nav className="navbar navbar-expand-sm opacity-10 p-3">
         <h2 className='fw-bold mx-4 heading1'>Fresh 'O Farm<GiCorn className='mx-2'/></h2>

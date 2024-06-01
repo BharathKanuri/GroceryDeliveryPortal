@@ -94,7 +94,7 @@ farmersApp.put('/update-profile/:username',expressAsyncHandler(async(req,res)=>{
                         }
                 }
             )
-            if(updatedUser.acknowledged===true)
+            if(updatedUser.acknowledged)
                 res.status(201).send({message:'Profile updated'})
             else
                 res.status(200).send({message:'Profile updation unsuccessful'})
@@ -263,7 +263,8 @@ farmersApp.get('/get-all-products',expressAsyncHandler(async(req,res)=>{
             projection:{_id:0,"Username":1,[`Products`]:1}
         }
     ).toArray()
-    if(resultSet.length===0)
+    const productsNotExist=resultSet.some(item=>item.Products && Object.keys(item.Products).length===0)
+    if(productsNotExist)
         res.status(200).send({message:'Products are unavailable currently'})
     else
         res.status(201).send({message:resultSet})

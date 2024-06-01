@@ -40,9 +40,9 @@ function Order(){
     })
     .catch(err=>handleCatch(err))
   },[executeOrder])
-  let cancelOrder=(orderKey,orderOwner,addressKey)=>{
+  let cancelOrder=async(orderKey,orderOwner,addressKey)=>{
     if(window.confirm("Are you sure about to cancel your order")){
-      axios.put(`http://localhost:3500/customers-api/cancel-order/${currentUser.Username}`,{orderKey,orderOwner,addressKey})
+      await axios.put(`http://localhost:3500/customers-api/cancel-order/${currentUser.Username}`,{orderKey,orderOwner,addressKey})
       .then(response=>{
         if(response.status===201){
           toast.success(response.data.message,toastConfig)
@@ -54,7 +54,7 @@ function Order(){
       .catch(err=>handleCatch(err))
     }
   }
-  return (
+  return(
     <div className='pt-1'>
         {err==='Your order history is empty!!!' && <p className='text-center text-primary bg-dark p-2'>{err}</p>}
         <div className='row row-cols-md-2 row-cols-sm-2 row-cols-1 d-flex justify-content-around'>

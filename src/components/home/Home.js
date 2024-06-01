@@ -1,11 +1,10 @@
-import React from 'react'
 import './Home.css'
 import Carousel from 'react-bootstrap/Carousel';
 import Marquee from 'react-fast-marquee'
 import {BiSolidMegaphone} from 'react-icons/bi'
 
-function Home() {
-  return (
+function Home(){
+  return(
     <div>
       <h1 className='text-danger text-center mt-5 container'>Welcome to Fresh'O Farm Portal</h1>
       <p className='text-center mb-2'>Eat Fresh Live Healthy...</p>

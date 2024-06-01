@@ -10,7 +10,7 @@ import {loginContext} from '../contexts/LoginContext'
 import {IoReceipt} from "react-icons/io5"
 import {RotatingLines} from 'react-loader-spinner'
 
-function Shop() {
+function Shop(){
   let [currentUser,,userLogInStatus]=useContext(loginContext)
   let {register,setError,formState:{errors},setValue,getValues}=useForm()
   let [allProducts,setAllProducts]=useState([])
@@ -25,20 +25,12 @@ function Shop() {
   let [showBillPayment,setShowBillPayment]=useState(false)
   let [executeShop,setExecuteShop]=useState(false)
   let [isLoading,setIsLoading]=useState(false)
+  let addressProps=['Name','PhoneNo','HouseNo','Street','Locality','State','Key']
   let openSetAddressModal=()=>{
-    setError('Name')
-    setError('PhoneNo')
-    setError('HouseNo')
-    setError('Street')
-    setError('Locality')
-    setError('State')
-    setValue('Name',curAddress?.Name)
-    setValue('PhoneNo',curAddress?.PhoneNo)
-    setValue('HouseNo',curAddress?.HouseNo)
-    setValue('Street',curAddress?.Street)
-    setValue('Locality',curAddress?.Locality)
-    setValue('State',curAddress?.State)
-    setValue('Key',curAddress?.Key)
+    for(const prop of addressProps){
+      setError(prop)
+      setValue(prop,curAddress?.[prop])
+    }
     setOpenAddressModal(true)
   }
   let incStockCount=()=>{
@@ -81,7 +73,7 @@ function Shop() {
           })
           .catch(err=>handleCatch(err))}
       },[executeShop])
-    let saveAddress=()=>{
+    let saveAddress=async()=>{
       let address=getValues()
       let requiredFields = ['Name', 'PhoneNo', 'HouseNo', 'Street', 'Locality', 'State'], hasErrors=false
       requiredFields.forEach((field)=>{
@@ -102,7 +94,7 @@ function Shop() {
         //Enforce timestamp as unique key to each address object
         let key=Date.now().toString()
         address.Key=key
-        axios.put(`http://localhost:3500/customers-api/modify-address/${currentUser.Username}`,address)
+        await axios.put(`http://localhost:3500/customers-api/modify-address/${currentUser.Username}`,address)
         .then(responseObj=>{
           if(responseObj.data.message==='Address updation successfull'){
             toast.info(responseObj.data.message, toastConfig)
@@ -115,12 +107,12 @@ function Shop() {
           .catch(err=>handleCatch(err))
         }
       }
-    let order=()=>{
+    let order=async()=>{
       setIsLoading(true)
       curProduct.Status="Ordered"
       curAddress.Username=currentUser.Username
       let orderData=[curProductOwner,curProduct,stockCount,curAddress]
-      axios.put(`http://localhost:3500/farmers-api/order-product/${currentUser.Username}`,orderData)
+      await axios.put(`http://localhost:3500/farmers-api/order-product/${currentUser.Username}`,orderData)
       .then(response=>{
         setIsLoading(false)
         if(response.data.message==='Order placed successfully')
@@ -135,7 +127,7 @@ function Shop() {
         handleCatch(err)
       })
     } 
-  return (
+  return(
     <div className='pt-1'>
         {err==='Products are unavailable currently' && <p className='text-center text-primary bg-dark p-2'>{err}</p>}
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-6" style={{marginLeft:'-7.5px',marginRight:'-80px'}}>

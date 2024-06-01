@@ -1,19 +1,21 @@
-import React, {useState} from 'react'
 import './LogIn.css'
+import {validateUsername,validatePassword,validateEmail} from '../ValidateForm'
 import {useForm} from 'react-hook-form'
 import {loginContext} from '../contexts/LoginContext'
 import {useNavigate} from 'react-router-dom'
-import {useEffect,useContext} from 'react'
+import {useState,useEffect,useContext} from 'react'
 import {AiFillEye,AiFillEyeInvisible} from 'react-icons/ai'
 import {RotatingLines} from 'react-loader-spinner'
 
-function LogIn() {
+function LogIn(){
   let [showPassword,setShowPassword]=useState(false)
-  let {register,handleSubmit,formState:{errors}}=useForm()
+  let {register,handleSubmit,formState:{errors},setError}=useForm()
   let navigate=useNavigate()
   let [currentUser,logInError,userLogInStatus,logInUser,,]=useContext(loginContext)
   let [isLoading,setIsLoading]=useState(false)
   let formSubmit=async(userObj)=>{
+    if(validateUsername(userObj,setError) || validatePassword(userObj,setError,1))
+      return
     setIsLoading(true)
     await logInUser(userObj)
     setIsLoading(false)
@@ -23,7 +25,7 @@ function LogIn() {
       navigate(`/${currentUser.Type}-dashboard`)
     }
   },[userLogInStatus])
-  return (
+  return(
     <div className='user-login container rounded pt-3 mt-5 mb-5'>
       <h1 className='text-center mt-2 fs-4 fw-semibold'>Already have an account...Let's login...</h1>
       {logInError.length!==0 && <p className='text-danger fs-4 pt-2 pb-2 text-center'>{logInError}</p>}

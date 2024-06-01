@@ -94,7 +94,7 @@ customersApp.put('/update-profile/:username',expressAsyncHandler(async(req,res)=
                         }
                 }
             )
-            if(updatedUser.acknowledged===true)
+            if(updatedUser.acknowledged)
                 res.status(201).send({message:'Profile updated'})
             else
                 res.status(200).send({message:'Profile updation unsuccessful'})

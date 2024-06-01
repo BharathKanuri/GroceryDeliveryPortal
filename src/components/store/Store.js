@@ -9,7 +9,7 @@ import {Carousel,Modal,Button} from 'react-bootstrap'
 import {useForm} from 'react-hook-form'
 import {RotatingLines} from 'react-loader-spinner'
 
-function Store() {
+function Store(){
   let [currentUser,,userLogInStatus]=useContext(loginContext)
   let [products,setProducts]=useState({})
   let [showProduct]=useOutletContext()
@@ -126,7 +126,7 @@ function Store() {
         })
       }
   }
-  return (
+  return(
     <div  className='pt-1'>
       {err==='No products found' && <p className='text-center text-primary bg-dark p-2'>Your store is empty!!!</p>}
       <div className='row row-cols-md-2 row-cols-sm-2 row-cols-1 d-flex justify-content-around'>

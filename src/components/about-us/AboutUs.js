@@ -1,8 +1,7 @@
-import React from 'react'
 import './AboutUs.css'
 
-function AboutUs() {
-  return (
+function AboutUs(){
+  return(
     <div className='container mt-5 mb-5'>
       <p className='lead text-danger fw-bold'>Fresh fruits and vegetables are the healthiest food that can be consumed and hence the trend has turned towards gardening and growing own produce. People today are very conscious about health and are looking towards consuming healthy food. With the busy lifestyle, pollution, and stress hovering around all individuals, consumption of fresh vegetables in daily diet has become the key requirement.</p>
       <p className='lead text-primary fw-bold'>Fresh fruits and vegetables are the healthiest food that can be consumed and hence the trend has turned towards gardening and growing own produce. People today are very conscious about health and are looking towards consuming healthy food. With the busy lifestyle, pollution, and stress hovering around all individuals, consumption of fresh vegetables in daily diet has become the key requirement.</p>

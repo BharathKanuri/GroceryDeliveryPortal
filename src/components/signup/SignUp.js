@@ -1,5 +1,6 @@
 import React from 'react'
 import './SignUp.css'
+import {validateUsername,validatePassword,validateEmail} from '../ValidateForm'
 import {useState} from 'react'
 import {useForm} from 'react-hook-form'
 import {useNavigate} from 'react-router-dom'
@@ -7,7 +8,7 @@ import axios from 'axios'
 import {AiFillEye,AiFillEyeInvisible} from 'react-icons/ai'
 import {RotatingLines} from 'react-loader-spinner'
 
-function SignUp() {
+function SignUp(){
   let [err,setErr]=useState("")
   let {register,handleSubmit,setError,formState:{errors}}=useForm()
   let navigate=useNavigate()
@@ -18,29 +19,7 @@ function SignUp() {
     setSelectedFile(eventObj.target.files[0])
   }
   let formSubmit=async(userObj)=>{
-    let usernameErr=true,passwordErr=true,emailErr=true;
-    var usernamePat=/^[a-zA-Z\s_]+$/
-    if(usernamePat.test(userObj.Username)===false)
-      setError("Username",{type:"required",message:'* Please enter a valid username [a-zA-Z_ ]'})
-    else{
-      setError("Username",'')
-      usernameErr=false
-    }
-    var passwordPat=/^(?=.*[@#$%_])(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+$/
-    if(passwordPat.test(userObj.Password)===false)
-      setError("Password",{type:"required",message:'* Please enter a valid password (a-z, A-Z, 0-9, (_@#$%))'})
-    else{
-      setError("Password",'')
-      passwordErr=false
-    }
-    var emailPat=/^[a-zA-Z0-9_\-\.]+[@][a-z]+[\.][a-z]{2,3}$/
-    if(emailPat.test(userObj.Email)===false)
-      setError('Email',{type:"required",message:'* Please enter a valid email (ex :- jimmy_carter@gmail.com)'})
-    else{
-      setError('Email','')
-      emailErr=false
-    }
-    if(usernameErr||passwordErr||emailErr)
+    if(validateUsername(userObj,setError) || validatePassword(userObj,setError) || validateEmail(userObj,setError))
       return
     else{
       setIsLoading(true)
@@ -73,7 +52,7 @@ function SignUp() {
       })
     }
   }
-  return (
+  return(
     <div className='user-signup'>
       <h1 className='text-center pt-4 fs-4 fw-semibold'>Don't have an account... Let's create one...</h1>
       {err?.length!=0 && <p className='text-danger fs-4 pb-2 pt-2 text-center'>{err}</p>}
@@ -86,12 +65,10 @@ function SignUp() {
                 className='form-control'
                 placeholder='Username'
                 id='username'
-                {...register("Username",{required:'* Username required',minLength:6,maxLength:23})}
+                {...register("Username",{required:'* Username required'})}
               />
               <label htmlFor='username'>Username</label>
               {errors.Username?.type==='required' && <p className='text-danger fw-semibold errors'>{errors.Username.message}</p>}
-              {errors.Username?.type==='minLength' && <p className='text-danger fw-semibold errors'>* Min length should be 6</p>}
-              {errors.Username?.type==='maxLength' && <p className='text-danger fw-semibold errors'>* Max length should be 23</p>}
             </div>
             <div className='input-group form-floating'>
               <input
@@ -99,14 +76,12 @@ function SignUp() {
                   id='password'
                   placeholder='Password'
                   className='form-control'
-                  {...register("Password",{required:'* Password required',minLength:12,maxLength:20})}
+                  {...register("Password",{required:'* Password required'})}
               />
               <a onClick={()=>{setShowPassword(!showPassword)}} className='input-group-text rounded-end text-dark fs-5'>{showPassword?<AiFillEyeInvisible/>:<AiFillEye/>}</a>
               <label htmlFor='password'>Password&nbsp;&nbsp;&nbsp;(a-z, A-Z, 0-9, (_@#$%))</label>
             </div>
               {errors.Password?.type==='required' && <p className='text-danger fw-semibold errors'>{errors.Password.message}</p>}
-              {errors.Password?.type==='minLength' && <p className='text-danger fw-semibold errors'>* Min length should be 12</p>}
-              {errors.Password?.type==='maxLength' && <p className='text-danger fw-semibold errors'>* Max length should be 20</p>}
             <div className='form-floating mt-4'>
               <input
                 type='email'

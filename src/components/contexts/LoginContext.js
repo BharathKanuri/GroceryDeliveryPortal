@@ -34,7 +34,7 @@ function LoginContext({children}){
         sessionStorage.clear("token")
         setUserLogInStatus(false)
     }
-    return (
+    return(
         <loginContext.Provider value={[currentUser,logInError,userLogInStatus,logInUser,logOutUser,setLoginError]}>
             {children}
         </loginContext.Provider>    
