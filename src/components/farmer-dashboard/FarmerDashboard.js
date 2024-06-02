@@ -160,13 +160,8 @@ function FarmerDashboard(){
         setIsLoading(false)
         if(responseObj.data.message==='Product added'){
           toast.success('Product added to store', toastConfig)
-          setShowProduct(!showProduct)
-          setValue('Name')
-          setValue('Quantity')
-          setValue('Measurement')
-          setValue('Price')
-          setValue('Images')
-          setValue('Stock')
+          for(const idx in productProps)
+            setValue(productProps[idx])
         }
         else if(responseObj.data.message==='* Select only jpeg/jpg/png files')
           setError("Images",{message:responseObj.data.message,type:'required'})
