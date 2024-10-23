@@ -14,8 +14,8 @@ function LoginContext({children}){
                 setLoginError("")
                 setUserLogInStatus(true)
                 //Save token to local storage/session storage
-                //local storage stores (key-value) pair until the page is reloaded
-                //session storage stores (key-value) pair until the url is changed
+                //Local storage persists even after page reloads or browser restarts
+                //Session storage is cleared when the tab or browser is closed
                 sessionStorage.setItem("token",res.data.token)
             }
             else if(res.status===200)
